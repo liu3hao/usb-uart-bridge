@@ -1,0 +1,432 @@
+import std
+
+document.sheet_type = sheet_A5()
+
+gnd = dgnd()
+vbus = supply("VBUS")
+v3v3 = supply("3V3")
+
+def _led(color):
+    tmp = led(color)
+    tmp.LCSC_part = "C2286"
+    return tmp
+
+vbus.color = "red"
+vbus.highlight = "red"
+
+v3v3.color = "blue"
+v3v3.highlight = "blue"
+
+ch340e = create component:
+    pins: 
+        1: "UD+"
+        2: "UD-"
+        3: "GND"
+        4: "RTS#"
+        5: "CTS#"
+        6: "TNOW"
+        7: "VCC"
+        8: "TXD"
+        9: "RXD"
+        10: "V3"
+    type: "ic"
+    arrange:
+        left: 7, 10, [2], 1, 2, [1], 3
+        right: 8, 9, 4, 5, [3], 6
+    width: 600
+    params:
+        mpn: "CH340E"
+        LCSC_part: "C99652"
+        footprint: "MSOP-10_3x3mm_P0.5mm"
+
+usb_conn = create component:
+    pins:
+        A1:  "A1"
+        A2:  "A2"
+        A3:  "A3"
+        A4:  "A4"
+        A5:  "A5"
+        A6:  "A6"
+        A7:  "A7"
+        A8:  "A8"
+        A9:  "A9"
+        A10: "A10"
+        A11: "A11"
+        A12: "A12"
+
+        B1:  "B1"
+        B2:  "B2"
+        B3:  "B3"
+        B4:  "B4"
+        B5:  "B5"
+        B6:  "B6"
+        B7:  "B7"
+        B8:  "B8"
+        B9:  "B9"
+        B10: "B10"
+        B11: "B11"
+        B12: "B12"
+
+        S1: "S1"
+
+
+    arrange:
+        right: "A4", "A9", "B4", "B9", [3], "A6", "B6", "A7", "B7",[1], "A2", "B11", "A3", "B10", "A5", "B8", "A8", "B5", "A10", "B3", "A11", "B2", [1], "A1", "B12", "A12", "B1", "S1"
+    params:
+        mpn: "1054500101"
+        manufacturer: "MOLEX"
+        LCSC_part: "C134092"
+        footprint: "USB_C_Receptacle_Molex_105450-0101"
+
+connheader_6pins = create component:
+    pins: 6
+    arrange:
+        left: 1,2,3,4,5,6
+    width: 200
+    params:
+        footprint: "PinHeader_1x06_P2.54mm_Horizontal"
+        LCSC_part: "C492414"
+        mpn: "C492414"
+
+connheader_1pin = create component:
+    pins: 1
+    arrange:
+        left: 1
+    width: 200
+    params:
+        footprint: "PinHeader_1x01_P2.54mm_Vertical"
+        LCSC_part: "C492400"
+        mpn: "C492400"
+
+
+lp5912 = create component:
+    pins: 
+        1: "OUT"
+        2: "NC"
+        3: "PG"
+        4: "EN"
+        5: "GND"
+        6: "IN"
+        7: "EP"
+    type: "ic"
+    arrange:
+        left: 6, 4, [1], 7, 5
+        right: 1, [2], 3, 2
+    params:
+        mpn: "LP5912-3.3DRVR"
+        LCSC_part: "C524780"
+        footprint: "WSON-6-1EP_2x2mm_P0.65mm_EP1x1.6mm_ThermalVias"
+
+def esd_diode():
+    width = 100
+    height = 100
+
+    # Diode is drawn horizontally
+    #  -|>|-
+    return create component:
+        pins: 2
+        type: "diode"
+        display: create graphic (params):
+            triangle: -width/2, 0, width/2, 0, height
+            vline: width/2, -height/2, height
+            hpin: 2, -width/2-100, 0, 100    # anode
+            hpin: 1, width/2 + 100, 0, -100  # cathode
+            label: params.refdes, 0, -100, fontSize=50, anchor="middle", vanchor="top"
+        params:
+            footprint: "D_SOD-523"
+            mpn: "ESD5B5.0ST1G"
+            LCSC_part: "C93623"
+
+sheet:
+    ..title = "USB-UART bridge"
+    ..revision = "V1"
+
+
+    frame:
+        ..title = "USB serial chip"
+
+        at usb_conn:
+            "A4":
+                wire right 100
+                branch:
+                    wire right 200 
+
+                    branch:
+                        wire down 100
+                        add cap(100n)
+                        wire down 100
+                        to gnd
+
+                    wire up 100
+                    to vbus
+
+                wire down 100
+                branch:
+                    wire auto to pin "A9"
+                wire down 100
+                branch:
+                    wire auto to pin "B4"
+
+                wire down 100 auto to pin "B9"
+
+            "A1":
+                wire right 100 down 100
+
+                branch:
+                    wire auto to pin "B12"
+                wire down 100
+
+                branch:
+                    wire auto to pin "A12"
+
+                wire down 100
+                branch:
+                    wire auto to pin "B1"
+
+                wire down 100
+                branch:
+                    wire auto to pin "S1"
+                
+                wire down 100
+                to gnd
+        
+            "A6":
+                wire right 100
+                branch:
+                    wire auto
+                    to pin "B6"
+                wire right 100
+                add label("D+")
+                wire right 400
+                branch:
+                    wire down 300
+                    add esd_diode()
+                    wire down 100
+                    to gnd
+
+                wire right 300
+                add res(0)
+                wire right 300
+                to ch340e pin "UD+"
+
+            "A7":
+                wire right 100
+                branch:
+                    wire auto
+                    to pin "B7"
+
+                wire right 100
+                add label("D-")
+                wire right 200
+                branch:
+                    wire down 100
+                    add esd_diode()
+                    wire down 100 to gnd
+                    
+                wire right 500
+                add res(0) flip:y
+                wire right 100 auto
+                to ch340e pin "UD-"
+
+            "A2":
+                add no_connect()
+            "A3":
+                add no_connect()
+            "A5":
+                add no_connect()
+            "A8":
+                add no_connect()
+            "A10":
+                add no_connect()
+            "A11":
+                add no_connect()
+
+            "B2":
+                add no_connect()
+            "B3":
+                add no_connect()
+            "B5":
+                add no_connect()
+            "B8":
+                add no_connect()
+
+            "B10":
+                add no_connect()
+            "B11":
+                add no_connect()
+            
+            
+
+        at ch340e:
+            "GND":
+                wire left 100 down 100 to gnd
+
+            "VCC":
+                at vbus
+                wire down 100
+                branch:
+                    wire down 200
+                    add cap(100n) flip:x
+                    wire down 100
+                    to gnd
+
+                wire right 600 down 500 right 100
+                to ch340e pin "VCC"
+
+            "V3":
+                at v3v3 
+                wire down 200
+                branch:
+                    wire down 100
+                    add cap(100n) 
+                    wire down 100
+                    to gnd
+                    
+                wire right 300 down 500 right 200
+                to ch340e pin 10
+
+            "TXD":
+                add label("TXD")
+                wire right 800
+                to connheader_6pins pin 3
+
+            "RXD":
+                add label("RXD")
+                wire auto
+                to connheader_6pins pin 4
+
+            "RTS#":
+                add label("RTS#")
+                wire auto
+                to connheader_6pins pin 5
+
+            "CTS#":
+                add label("CTS#")
+                wire auto
+                to connheader_6pins pin 6
+            
+            "TNOW": 
+                add label("TNOW")
+                wire right 200
+                wire down 100
+                add _led("RED") pin 2
+                wire down 100
+                add res(4.7k)
+                wire down 100
+                to gnd
+
+
+        at connheader_6pins:
+            1:
+                wire left 100 up 600
+                branch:
+                    wire up 100
+                    to v3v3
+                wire left 200 down 100
+                add cap(100n)
+                ..flipX = true
+
+                wire down 100
+                to gnd
+            2:
+                wire left 100 to gnd
+        
+    frame:
+        ..padding = 0
+        ..margin = 0
+        ..border = 0
+        ..direction = "column"
+
+        frame:
+            ..title = "3V3 supply"
+
+            at lp5912:
+                6:
+                    at vbus
+                    wire down 100
+                    branch:
+                        wire down 100
+                        add cap(1u)
+                        wire down 100
+                        to gnd
+
+                    wire right 400
+                    branch:
+                        wire down 100 right 100
+                        add res(4.7k) flip:y 
+
+                        wire right 100
+                        to lp5912 pin 4
+
+                    wire auto
+                    to lp5912 pin "IN"
+
+                1:
+                    wire right 200
+
+                    branch:
+                        wire down 100
+                        add res(4.7k)
+                        wire down 100 left 100
+                        wire auto_
+                        to lp5912 pin 3
+
+                    wire right 300
+                    branch:
+                        wire down 100
+                        add cap(1u)
+                        wire down 100
+                        to gnd
+                    wire right 100 up 100
+                    to v3v3
+
+                7:
+                    wire left 100 down 100
+                    
+                    branch:
+                        wire auto
+                        to pin 5
+                    
+                    wire down 100
+                    to gnd
+
+                2:
+                    add no_connect()
+
+            at v3v3
+            wire down 100
+            add _led("RED") pin 2
+            wire down 100
+            add res(4.7k)
+            wire down 100
+            to gnd
+
+        frame:
+            ..title = "VBUS pin"
+                
+            at connheader_1pin
+            wire right 100
+            branch:
+                wire up 100
+                to vbus
+
+            wire down 100
+            add _led("RED") pin 2
+            wire down 100
+            add res(4.7k)
+            wire down 100
+            to gnd
+
+
+#bom_match:
+#    match:
+#        size: "0402"
+#        value: 4.7k
+#    set:
+#        LCSC_Part: "C25900"
+
+# 4.7k 0402: C25900
+# 1U   0402: C52923
+# 100N 0402: C1525
+# 0R   0402: C17168
+# RED  LED:  C2286
