@@ -37,7 +37,7 @@ ch340e = create component:
     params:
         mpn: "CH340E"
         LCSC_part: "C99652"
-        footprint: "MSOP-10_3x3mm_P0.5mm"
+        footprint: "Package_SO:MSOP-10_3x3mm_P0.5mm"
 
 usb_conn = create component:
     pins:
@@ -45,7 +45,7 @@ usb_conn = create component:
         A2:  "A2"
         A3:  "A3"
         A4:  "A4"
-        A5:  "A5"
+        A5:  "CC1"
         A6:  "A6"
         A7:  "A7"
         A8:  "A8"
@@ -58,7 +58,7 @@ usb_conn = create component:
         B2:  "B2"
         B3:  "B3"
         B4:  "B4"
-        B5:  "B5"
+        B5:  "CC2"
         B6:  "B6"
         B7:  "B7"
         B8:  "B8"
@@ -69,9 +69,8 @@ usb_conn = create component:
 
         S1: "S1"
 
-
     arrange:
-        right: "A4", "A9", "B4", "B9", [3], "A6", "B6", "A7", "B7",[1], "A2", "B11", "A3", "B10", "A5", "B8", "A8", "B5", "A10", "B3", "A11", "B2", [1], "A1", "B12", "A12", "B1", "S1"
+        right: "A4", "A9", "B4", "B9", [3], "A6", "B6", "A7", "B7",[1], "A2", "B11", "A3", "B10", "B8", "A8", "A10", "B3", "A11", "B2", [1], "A5", "B5", [1], "A1", "B12", "A12", "B1", "S1"
     params:
         mpn: "1054500101"
         manufacturer: "MOLEX"
@@ -84,7 +83,7 @@ connheader_6pins = create component:
         left: 1,2,3,4,5,6
     width: 200
     params:
-        footprint: "PinHeader_1x06_P2.54mm_Horizontal"
+        footprint: "Connector_PinHeader_2.54mm:PinHeader_1x06_P2.54mm_Horizontal"
         LCSC_part: "C492414"
         mpn: "C492414"
 
@@ -94,7 +93,7 @@ connheader_1pin = create component:
         left: 1
     width: 200
     params:
-        footprint: "PinHeader_1x01_P2.54mm_Vertical"
+        footprint: "Connector_PinHeader_2.54mm:PinHeader_1x01_P2.54mm_Vertical"
         LCSC_part: "C492400"
         mpn: "C492400"
 
@@ -115,7 +114,7 @@ lp5912 = create component:
     params:
         mpn: "LP5912-3.3DRVR"
         LCSC_part: "C524780"
-        footprint: "WSON-6-1EP_2x2mm_P0.65mm_EP1x1.6mm_ThermalVias"
+        footprint: "Package_SON:WSON-6-1EP_2x2mm_P0.65mm_EP1x1.6mm_ThermalVias"
 
 def esd_diode():
     width = 100
@@ -133,7 +132,7 @@ def esd_diode():
             hpin: 1, width/2 + 100, 0, -100  # cathode
             label: params.refdes, 0, -100, fontSize=50, anchor="middle", vanchor="top"
         params:
-            footprint: "D_SOD-523"
+            footprint: "Diode_SMD:D_SOD-523"
             mpn: "ESD5B5.0ST1G"
             LCSC_part: "C93623"
 
@@ -232,8 +231,6 @@ sheet:
                 add no_connect()
             "A3":
                 add no_connect()
-            "A5":
-                add no_connect()
             "A8":
                 add no_connect()
             "A10":
@@ -245,8 +242,6 @@ sheet:
                 add no_connect()
             "B3":
                 add no_connect()
-            "B5":
-                add no_connect()
             "B8":
                 add no_connect()
 
@@ -254,8 +249,21 @@ sheet:
                 add no_connect()
             "B11":
                 add no_connect()
-            
-            
+        
+        at usb_conn:
+            "CC1":
+                wire right 500 down 200
+                add res(5.1k)
+                ..refdes = "R8"
+                wire down 100
+                to gnd
+
+            "CC2":
+                wire right 300 down 100
+                add res(5.1k)
+                ..refdes = "R9"
+                wire down 100
+                to gnd
 
         at ch340e:
             "GND":
@@ -311,7 +319,7 @@ sheet:
                 wire down 100
                 add _led("RED") pin 2
                 wire down 100
-                add res(4.7k)
+                add res(5.1k)
                 wire down 100
                 to gnd
 
@@ -353,7 +361,7 @@ sheet:
                     wire right 400
                     branch:
                         wire down 100 right 100
-                        add res(4.7k) flip:y 
+                        add res(5.1k) flip:y 
 
                         wire right 100
                         to lp5912 pin 4
@@ -366,7 +374,7 @@ sheet:
 
                     branch:
                         wire down 100
-                        add res(4.7k)
+                        add res(5.1k)
                         wire down 100 left 100
                         wire auto_
                         to lp5912 pin 3
@@ -397,7 +405,7 @@ sheet:
             wire down 100
             add _led("RED") pin 2
             wire down 100
-            add res(4.7k)
+            add res(5.1k)
             wire down 100
             to gnd
 
@@ -413,9 +421,11 @@ sheet:
             wire down 100
             add _led("RED") pin 2
             wire down 100
-            add res(4.7k)
+            add res(5.1k)
             wire down 100
             to gnd
+
+
 
 
 #bom_match:
@@ -426,6 +436,7 @@ sheet:
 #        LCSC_Part: "C25900"
 
 # 4.7k 0402: C25900
+# 5.1k 0402: C25905
 # 1U   0402: C52923
 # 100N 0402: C1525
 # 0R   0402: C17168
