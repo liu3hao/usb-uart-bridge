@@ -1,15 +1,10 @@
-import std
+from std import *
 
 document.sheet_type = sheet_A5()
 
 gnd = dgnd()
 vbus = supply("VBUS")
 v3v3 = supply("3V3")
-
-def _led(color):
-    tmp = led(color)
-    tmp.LCSC_part = "C2286"
-    return tmp
 
 vbus.color = "red"
 vbus.highlight = "red"
@@ -75,7 +70,7 @@ usb_conn = create component:
         mpn: "1054500101"
         manufacturer: "MOLEX"
         LCSC_part: "C134092"
-        footprint: "USB_C_Receptacle_Molex_105450-0101"
+        footprint: "Connector_USB:USB_C_Receptacle_Molex_105450-0101"
 
 connheader_6pins = create component:
     pins: 6
@@ -144,7 +139,7 @@ sheet:
     frame:
         ..title = "USB serial chip"
 
-        at usb_conn:
+        at usb_conn: #= J1  
             "A4":
                 wire right 100
                 branch:
@@ -152,7 +147,7 @@ sheet:
 
                     branch:
                         wire down 100
-                        add cap(100n)
+                        add cap(100n) #= C1 
                         wire down 100
                         to gnd
 
@@ -199,14 +194,14 @@ sheet:
                 wire right 400
                 branch:
                     wire down 300
-                    add esd_diode()
+                    add esd_diode() #= D1 
                     wire down 100
                     to gnd
 
                 wire right 300
-                add res(0)
+                add res(0) #= R1 
                 wire right 300
-                to ch340e pin "UD+"
+                to ch340e pin "UD+" #= U1 
 
             "A7":
                 wire right 100
@@ -219,11 +214,11 @@ sheet:
                 wire right 200
                 branch:
                     wire down 100
-                    add esd_diode()
+                    add esd_diode() #= D2 
                     wire down 100 to gnd
                     
                 wire right 500
-                add res(0) flip:y
+                add res(0) flip:y #= R2 
                 wire right 100 auto
                 to ch340e pin "UD-"
 
@@ -253,15 +248,13 @@ sheet:
         at usb_conn:
             "CC1":
                 wire right 500 down 200
-                add res(5.1k)
-                ..refdes = "R8"
+                add res(5.1k) #= R3 
                 wire down 100
                 to gnd
 
             "CC2":
                 wire right 300 down 100
-                add res(5.1k)
-                ..refdes = "R9"
+                add res(5.1k) #= R4 
                 wire down 100
                 to gnd
 
@@ -274,7 +267,7 @@ sheet:
                 wire down 100
                 branch:
                     wire down 200
-                    add cap(100n) flip:x
+                    add cap(100n) flip:x #= C2 
                     wire down 100
                     to gnd
 
@@ -286,7 +279,7 @@ sheet:
                 wire down 200
                 branch:
                     wire down 100
-                    add cap(100n) 
+                    add cap(100n) #= C3
                     wire down 100
                     to gnd
                     
@@ -296,7 +289,7 @@ sheet:
             "TXD":
                 add label("TXD")
                 wire right 800
-                to connheader_6pins pin 3
+                to connheader_6pins pin 3 #= J2 
 
             "RXD":
                 add label("RXD")
@@ -317,9 +310,9 @@ sheet:
                 add label("TNOW")
                 wire right 200
                 wire down 100
-                add _led("RED") pin 2
+                add led("RED") pin 2 #= D3 
                 wire down 100
-                add res(5.1k)
+                add res(5.1k) #= R5 
                 wire down 100
                 to gnd
 
@@ -331,7 +324,7 @@ sheet:
                     wire up 100
                     to v3v3
                 wire left 200 down 100
-                add cap(100n)
+                add cap(100n) #= C4 
                 ..flipX = true
 
                 wire down 100
@@ -348,20 +341,20 @@ sheet:
         frame:
             ..title = "3V3 supply"
 
-            at lp5912:
+            at lp5912: #= U2  
                 6:
                     at vbus
                     wire down 100
                     branch:
                         wire down 100
-                        add cap(1u)
+                        add cap(1u) #= C5 
                         wire down 100
                         to gnd
 
                     wire right 400
                     branch:
                         wire down 100 right 100
-                        add res(5.1k) flip:y 
+                        add res(5.1k) flip:y #= R6  
 
                         wire right 100
                         to lp5912 pin 4
@@ -374,7 +367,7 @@ sheet:
 
                     branch:
                         wire down 100
-                        add res(5.1k)
+                        add res(5.1k) #= R7 
                         wire down 100 left 100
                         wire auto_
                         to lp5912 pin 3
@@ -382,7 +375,7 @@ sheet:
                     wire right 300
                     branch:
                         wire down 100
-                        add cap(1u)
+                        add cap(1u) #= C6 
                         wire down 100
                         to gnd
                     wire right 100 up 100
@@ -403,41 +396,38 @@ sheet:
 
             at v3v3
             wire down 100
-            add _led("RED") pin 2
+            add led("RED") pin 2 #= D4 
             wire down 100
-            add res(5.1k)
+            add res(5.1k) #= R8 
             wire down 100
             to gnd
 
         frame:
             ..title = "VBUS pin"
                 
-            at connheader_1pin
+            at connheader_1pin #= J3 
             wire right 100
             branch:
                 wire up 100
                 to vbus
 
             wire down 100
-            add _led("RED") pin 2
+            add led("RED") pin 2 #= D5 
             wire down 100
-            add res(5.1k)
+            add res(5.1k) #= R9 
             wire down 100
             to gnd
 
+set: "LCSC_part":
+    type: "res", size: "0402", value:
+        0:    "C17168"
+        4.7k: "C25900"
+        5.1k: "C25905"
+    type: "cap", size: "0402", value:
+        100n: "C1525"
+        1u: "C52923"
+    type: "diode", color: 
+        "RED": "C2286"
 
-
-
-#bom_match:
-#    match:
-#        size: "0402"
-#        value: 4.7k
-#    set:
-#        LCSC_Part: "C25900"
-
-# 4.7k 0402: C25900
-# 5.1k 0402: C25905
-# 1U   0402: C52923
-# 100N 0402: C1525
-# 0R   0402: C17168
-# RED  LED:  C2286
+document.bom.columns = ["refdes", "value", "LCSC_part", "footprint"]
+document.bom.group_by = ["footprint", "value", "LCSC_part"]
