@@ -1,0 +1,4 @@
+usb_uart_bridge_pcb/Production/**
+usb_uart_bridge_pcb/*-backups/**
+*.ods
+*.csv
